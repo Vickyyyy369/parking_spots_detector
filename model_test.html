@@ -1,0 +1,47 @@
+<!doctype html>
+<html lang="en">
+	<head>
+		  <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+		  <title>Model test</title>
+		  <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@0.14.2"> </script>
+
+	</head>
+	<body>
+		  <canvas id="scene">
+		  	<img  src="img/icon-2.png" />
+		  	
+		  </canvas>
+		  <img style="display: none"  src="img/IMG_0365.JPG" width="224" height="224"/>
+		  <script>
+
+		  	const MODEL_URL = 'web_model/model.json';
+		const class_dictionary=['empty','occupied'];
+		async function fun(){
+			const model =  tf.loadModel(MODEL_URL);
+			alert(model);
+			const imageInput = document.getElementById("scene");
+			//alert(imageInput);
+			//imageInput.print();
+			const imageRead = tf.fromPixels(imageInput); //将HTML元素转换成3D张量
+			//alert(imageRead);
+			//const imageTensors=[];
+			//imageTensors.push(imageRead);
+			//const images = tf.stack(imageTensors);  
+			//images.print();
+			const images = imageRead.expandDims(0);  //增加维度为4D
+			const b=tf.scalar(255);
+			const imgs=images.toFloat().div(b);   //除以255
+		    alert(imgs.shape);
+            //const predictions = await model.predict(imgs);
+            const predictions = await model.predict(tf.zeros([1, 48, 48, 3]));
+            
+            const predictedClass = predictions.as1D().argMax();
+            const classId = predictedClass.data()[0];
+            const result = class_dictionary[classId];
+            result.print();
+
+		}
+        fun();
+		  </script>
+	</body>
+</html>

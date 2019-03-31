@@ -1,0 +1,69 @@
+<!doctype html>
+<html lang="en">
+	<head>
+		  <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+		  <meta http-equiv="Content-Type" content="text/javasript; charset=utf-8"/>
+		  <meta http-equiv="Access-Control-Allow-Origin" content="134.175.107.144:8099">
+		  <title>Model test</title>
+		  <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@0.11.1"> </script>
+
+	</head>
+	<body>
+		  <input type="file" id="upload-json">
+		  <input type="file" id="upload-weights">
+		  <canvas id="mycanvas" wigth="400px" height="300px">
+		  <img style="display: none"  src="img/IMG_0365.JPG" width="400" height="300"/>	
+		  </canvas>
+		  <script>
+
+        //const uploadJSONInput = document.getElementById("upload-json");
+        //const uploadWeightsInput = document.getElementById("upload-weights");
+		const MODEL_URL = 'http://134.175.107.144:8099/web_model/model.json';
+		const class_dictionary=['empty','occupied'];
+		async function fun(){
+		 	//var myHeaders = new Headers();
+            //myHeaders.append('Access-Control-Allow-Origin', '134.175.107.144:8099');
+            var myInit = { method: 'GET',
+               headers: {'Access-Control-Allow-Origin':'134.175.107.144:8099'},
+               mode: 'cors',
+               cache: 'default' };
+            const model =  tf.loadModel(tf.io.browserHTTPRequest(
+    'http://134.175.107.144:8099/web_model/model.json',myInit));
+		 	//const model = tf.loadModel("./web_model");
+		 	/*const model = tf.loadModel(tf.io.browserHTTPRequest(
+    'http://134.175.107.144:8099/web_model/model.json',
+    {method: 'GET', headers: {'Access-Control-Allow-Origin':'134.175.107.144:8099'}}))*/
+			//const model =  tf.loadModel(MODEL_URL);
+			/*const model = async await tf.loadModel(tf.io.browserFiles(
+     [uploadJSONInput.files[0], uploadWeightsInput.files[0]]));*/
+			//model.summary();
+			//alert(model);
+			const canvas = document.getElementById("mycanvas");
+			const ctx = canvas.getContext("2d");
+			const imageData = ctx.getImageData(50,175,48,48);
+
+            for (let j = 0; j < imageData.data.length; j++) {
+            imageData.data[j] = imageData.data[j] / 255;
+          }
+
+
+			const tensor = tf.fromPixels(imageData);
+			const eTensor = tensor.expandDims(0);
+			const image = tf.cast(eTensor,'float32');
+            const predictions = model.predict(eTensor);
+             model.predict(eTensor).print();
+
+
+
+
+
+           const predictedClass = predictions.as1D().argMax();
+            const classId = predictedClass.data()[0];
+            const result = class_dictionary[classId];
+            //result.print();
+
+		}
+        fun();
+		  </script>
+	</body>
+</html>
